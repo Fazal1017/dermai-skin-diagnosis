@@ -1,0 +1,44 @@
+# Virtual environments
+.venv/
+venv/
+env/
+*.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Large model files
+*.pth
+*.pt
+*.h5
+*.pkl
+
+# Dataset (too large for GitHub)
+dataset/
+datasets/
+
+# Media & static
+media/
+staticfiles/
+static/
+
+# Secret files
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+predictions_log.csv
+
+# Node modules
+node_modules/

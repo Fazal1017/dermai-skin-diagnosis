@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Skin Disease Diagnosis{% endblock %}
+
+{% block extra_head %}
+<style>
+    .auth-container {
+        display: flex;
+        min-height: calc(100vh - 200px);
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+
+    .auth-card {
+        display: flex;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        width: 100%;
+        max-width: 900px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .auth-banner {
+        flex: 1;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%), url('https://images.unsplash.com/photo-1550831107-1553da8c8464?q=80&w=1000&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        color: white;
+    }
+
+    .auth-banner h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .auth-banner p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .auth-form-wrapper {
+        flex: 1;
+        padding: 3.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: white;
+    }
+
+    .auth-title {
+        font-size: 1.8rem;
+        color: var(--text-main);
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+
+    .auth-subtitle {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-block {
+        width: 100%;
+        padding: 0.8rem;
+        font-size: 1rem;
+        margin-top: 1rem;
+    }
+
+    .auth-links {
+        margin-top: 1.5rem;
+        text-align: center;
+        font-size: 0.95rem;
+        color: var(--text-muted);
+    }
+
+    .auth-links a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .auth-links a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .auth-card {
+            flex-direction: column;
+        }
+        .auth-banner {
+            padding: 2rem;
+            text-align: center;
+        }
+        .auth-form-wrapper {
+            padding: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-banner">
+            <h2>Welcome Back to Skin AI</h2>
+            <p>Access your diagnosis history, track your results, and leverage advanced AI for skin health insights.</p>
+        </div>
+        
+        <div class="auth-form-wrapper">
+            <h3 class="auth-title">Log In</h3>
+            <p class="auth-subtitle">Please enter your credentials to continue.</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    {{ form.username }}
+                </div>
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    {{ form.password }}
+                </div>
+                
+                <div class="form-group mt-3 mb-3">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Select Your Role:</label>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        {% for radio in form.role %}
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                {{ radio.tag }} <span style="font-size: 0.95rem;">{{ radio.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            </form>
+            
+            <div class="auth-links">
+                Don't have an account? <a href="{% url 'register' %}">Create one here</a>
+                <br><br>
+                <a href="{% url 'register_hospital' %}" style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal; text-decoration: underline;">Hospital Registration</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

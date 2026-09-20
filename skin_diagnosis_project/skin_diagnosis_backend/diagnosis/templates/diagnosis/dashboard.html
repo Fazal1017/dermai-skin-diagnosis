@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Dashboard - Skin Diagnosis{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .stats-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .stats-card h1 {
+        font-size: 1.6rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    .stats-card h2 {
+        font-size: 1.25rem;
+        color: #2d3748;
+        margin-bottom: 0.8rem;
+    }
+    .stats-card h3 {
+        font-size: 1.1rem;
+        color: #2d3748;
+        margin-bottom: 0.8rem;
+    }
+    .latest-diagnosis { border-left: 5px solid #667eea; }
+    .prescription-box {
+        background: #f7fafc;
+        padding: 18px;
+        border-radius: 10px;
+        margin-top: 14px;
+        border-left: 3px solid #667eea;
+    }
+    .prescription-box h3 { margin-bottom: 6px; font-size: 1rem; }
+    .prescription-box p { font-size: 0.92rem; color: #4a5568; line-height: 1.7; }
+    .doctor-info {
+        background: #ebf8ff;
+        padding: 14px 18px;
+        border-radius: 10px;
+        margin: 12px 0;
+        border-left: 3px solid #4299e1;
+    }
+    .doctor-info h3 { font-size: 1rem; margin-bottom: 6px; }
+    .doctor-info p { font-size: 0.92rem; color: #2b6cb0; margin-bottom: 4px; }
+    .urgency-Low { color: #276749; font-weight: bold; }
+    .urgency-Medium { color: #975a16; font-weight: bold; }
+    .urgency-High { color: #9b2c2c; font-weight: bold; animation: pulseUrgent 2s ease-in-out infinite; }
+    @keyframes pulseUrgent {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .table thead th {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 10px 14px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .table thead th:first-child { border-radius: 8px 0 0 0; }
+    .table thead th:last-child { border-radius: 0 8px 0 0; }
+    .table td {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        color: #4a5568;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .table tr:hover td { background: #f7fafc; }
+    .table tr:last-child td { border-bottom: none; }
+    .btn-dashboard {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    .btn-dashboard:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #718096;
+    }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="stats-card">
+        <h1>Welcome, {{ user.username }}!</h1>
+        <p><strong>Total diagnoses:</strong> {{ total_diagnoses }}</p>
+    </div>
+    
+    {% if latest %}
+    <div class="stats-card latest-diagnosis">
+        <h2>Your Latest Diagnosis: {{ latest.disease_name|title }}</h2>
+        <p><strong>Confidence:</strong> {{ latest.confidence|floatformat:1 }}%</p>
+        <p><strong>Date:</strong> {{ latest.created_at|date:"F j, Y, g:i a" }}</p>
+        
+        {% if latest.disease %}
+        <div class="doctor-info">
+            <h3>👨‍⚕️ Which Doctor to Visit?</h3>
+            <p><strong>Specialist:</strong> {{ latest.disease.doctor_specialty }}</p>
+            {% if latest.disease.referral_needed %}
+                <p>⚠️ <strong>Referral from a General Practitioner is required.</strong></p>
+            {% else %}
+                <p>✅ Can be seen directly by this specialist or a GP.</p>
+            {% endif %}
+            <p><strong>Urgency:</strong> <span class="urgency-{{ latest.disease.urgency_level }}">{{ latest.disease.get_urgency_level_display }}</span></p>
+        </div>
+        
+        <div class="prescription-box">
+            <h3>💊 Medical Prescription (First-Line Treatment)</h3>
+            <p>{{ latest.disease.prescription }}</p>
+            <h3 style="margin-top: 14px;">🛡️ Precautions</h3>
+            <p>{{ latest.disease.precautions|linebreaks }}</p>
+        </div>
+        {% else %}
+        <div class="doctor-info">
+            <p>⚠️ Detailed medical information not yet available for this disease in our database.</p>
+            <p>Please consult a healthcare provider.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="stats-card">
+        <div class="empty-state">
+            <div class="empty-icon">🔬</div>
+            <p>You haven't made any diagnoses yet.</p>
+            <a href="{% url 'diagnosis' %}" class="btn-dashboard">+ Upload an image to get started</a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Chart Section -->
+    {% if diagnoses %}
+    <div class="stats-card">
+        <h3>📊 Your Diagnosis History Chart</h3>
+        <canvas id="diagnosisChart" width="400" height="200"></canvas>
+    </div>
+    {% endif %}
+    
+    <!-- History Table -->
+    <div class="stats-card">
+        <h3>📋 All Diagnoses</h3>
+        {% if diagnoses %}
+        <table class="table">
+            <thead>
+                <tr><th>Date</th><th>Disease</th><th>Confidence</th><th>Specialist</th><th>Urgency</th></tr>
+            </thead>
+            <tbody>
+                {% for diag in diagnoses %}
+                <tr>
+                    <td>{{ diag.created_at|date:"Y-m-d" }}</td>
+                    <td>{{ diag.disease_name|title }}</td>
+                    <td>{{ diag.confidence|floatformat:1 }}%</td>
+                    <td>{% if diag.disease %}{{ diag.disease.doctor_specialty|truncatechars:30 }}{% else %}—{% endif %}</td>
+                    <td>{% if diag.disease %}<span class="urgency-{{ diag.disease.urgency_level }}">{{ diag.disease.get_urgency_level_display }}</span>{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: #718096;">No diagnoses yet.</p>
+        {% endif %}
+    </div>
+    
+    <a href="{% url 'diagnosis' %}" class="btn-dashboard">+ New Diagnosis</a>
+</div>
+
+{% if diagnoses %}
+<script>
+    const ctx = document.getElementById('diagnosisChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Number of Diagnoses',
+                data: {{ chart_data|safe }},
+                backgroundColor: [
+                    'rgba(102, 126, 234, 0.6)',
+                    'rgba(118, 75, 162, 0.6)',
+                    'rgba(72, 187, 120, 0.6)',
+                    'rgba(237, 137, 54, 0.6)',
+                    'rgba(66, 153, 225, 0.6)',
+                    'rgba(245, 101, 101, 0.6)',
+                    'rgba(159, 122, 234, 0.6)',
+                ],
+                borderColor: [
+                    'rgba(102, 126, 234, 1)',
+                    'rgba(118, 75, 162, 1)',
+                    'rgba(72, 187, 120, 1)',
+                    'rgba(237, 137, 54, 1)',
+                    'rgba(66, 153, 225, 1)',
+                    'rgba(245, 101, 101, 1)',
+                    'rgba(159, 122, 234, 1)',
+                ],
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

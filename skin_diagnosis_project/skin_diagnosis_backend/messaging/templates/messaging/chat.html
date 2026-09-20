@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="chat-container" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <h2>Chat with {{ other_party_name }}</h2>
+    
+    <div class="message-box" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 10px; background: rgba(0,0,0,0.05);">
+        {% for msg in messages %}
+        <div class="message {% if msg.sender == user %}sent{% else %}received{% endif %}" 
+             style="margin-bottom: 15px; padding: 10px 15px; border-radius: 15px; max-width: 70%;
+                    {% if msg.sender == user %}background: #dcf8c6; margin-left: auto; color: black;{% else %}background: #fff; color: black;{% endif %}">
+            <strong style="display: block; font-size: 0.8em; margin-bottom: 5px;">{{ msg.sender.get_full_name|default:msg.sender.username }}</strong>
+            <p style="margin: 0;">{{ msg.content }}</p>
+            <small style="display: block; font-size: 0.7em; color: #888; margin-top: 5px; text-align: right;">{{ msg.created_at|date:"H:i, M d" }}</small>
+        </div>
+        {% empty %}
+        <p style="text-align: center; color: #888;">No messages yet. Start the conversation!</p>
+        {% endfor %}
+    </div>
+    
+    <form method="post" class="message-form" style="display: flex; gap: 10px;">
+        {% csrf_token %}
+        <input type="text" name="content" placeholder="Type your message..." required 
+               style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        <button type="submit" style="padding: 10px 20px; border-radius: 5px; background: #007bff; color: white; border: none; cursor: pointer;">Send</button>
+    </form>
+</div>
+<script>
+    // Scroll to bottom on load
+    const messageBox = document.querySelector('.message-box');
+    messageBox.scrollTop = messageBox.scrollHeight;
+</script>
+{% endblock %}

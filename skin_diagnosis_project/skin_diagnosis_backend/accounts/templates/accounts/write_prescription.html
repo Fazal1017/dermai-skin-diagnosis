@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Write Prescription{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+    <h2>Write Prescription for {{ appointment.customer.user.get_full_name|default:appointment.customer.user.username }}</h2>
+    <p><strong>Date:</strong> {{ appointment.appointment_date }} | <strong>Disease:</strong> {{ appointment.diagnosis.disease_name|default:"N/A" }}</p>
+    
+    <form method="post" enctype="multipart/form-data" style="margin-top: 20px;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Medicines</label>
+            <textarea name="medicines" class="form-control" rows="4" required>{{ prescription.medicines|default:"" }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Dosage Instructions</label>
+            <textarea name="dosage" class="form-control" rows="3" required>{{ prescription.dosage|default:"" }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Additional Notes (Optional)</label>
+            <textarea name="notes" class="form-control" rows="2">{{ prescription.notes|default:"" }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Upload PDF Prescription (Optional)</label>
+            <input type="file" name="pdf_file" class="form-control" accept=".pdf">
+            {% if prescription.pdf_file %}
+            <p>Current file: <a href="{{ prescription.pdf_file.url }}" target="_blank">View PDF</a></p>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">Save Prescription</button>
+        <a href="{% url 'doctor_dashboard' %}" class="btn btn-outline">Cancel</a>
+    </form>
+</div>
+{% endblock %}

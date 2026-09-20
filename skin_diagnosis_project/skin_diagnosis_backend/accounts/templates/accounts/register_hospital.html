@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Register Hospital{% endblock %}
+
+{% block extra_head %}
+<style>
+    .register-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .form-section:last-child { border-bottom: none; }
+    .form-section h3 {
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    .form-row.full { grid-template-columns: 1fr; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="glass-card">
+        <h2 style="text-align: center; margin-bottom: 1.5rem;">🏥 Register Your Hospital</h2>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3>Hospital Details</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Hospital Name *</label>
+                        <input type="text" name="name" class="form-control" required value="{{ form.name.value|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Registration Number *</label>
+                        <input type="text" name="registration_number" class="form-control" required value="{{ form.registration_number.value|default:'' }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Hospital Email *</label>
+                        <input type="email" name="email" class="form-control" required value="{{ form.email.value|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="text" name="phone_number" class="form-control" required value="{{ form.phone_number.value|default:'' }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Address</h3>
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label>Address *</label>
+                        <textarea name="address" class="form-control" rows="2" required>{{ form.address.value|default:'' }}</textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>City *</label>
+                        <input type="text" name="city" class="form-control" required value="{{ form.city.value|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>State *</label>
+                        <input type="text" name="state" class="form-control" required value="{{ form.state.value|default:'' }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pincode *</label>
+                        <input type="text" name="pincode" class="form-control" required value="{{ form.pincode.value|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Established Year</label>
+                        <input type="number" name="established_year" class="form-control" value="{{ form.established_year.value|default:'' }}">
+                    </div>
+                </div>
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" class="form-control" rows="2">{{ form.description.value|default:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Admin Account</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Admin Username *</label>
+                        <input type="text" name="admin_username" class="form-control" required value="{{ form.admin_username.value|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Admin Email *</label>
+                        <input type="email" name="admin_email" class="form-control" required value="{{ form.admin_email.value|default:'' }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" name="admin_password" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password *</label>
+                        <input type="password" name="admin_confirm_password" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+
+            {% if form.errors %}
+            <div class="alert alert-error" style="margin-bottom: 1rem;">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}<div>{{ error }}</div>{% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">Register Hospital</button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 1.5rem;">
+            Already have an account? <a href="{% url 'login' %}">Login here</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

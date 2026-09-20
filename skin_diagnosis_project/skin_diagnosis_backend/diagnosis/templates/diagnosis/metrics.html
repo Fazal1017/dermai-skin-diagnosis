@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% block title %}Metrics Dashboard - Skin AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .metrics-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .stat-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        text-align: center;
+        transition: transform 0.2s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.2rem;
+    }
+    
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .chart-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    
+    .chart-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--text-main);
+    }
+    
+    .bar-row {
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .bar-label {
+        width: 180px;
+        font-weight: 500;
+        color: var(--text-main);
+        font-size: 0.9rem;
+        text-transform: capitalize;
+    }
+    
+    .bar-wrapper {
+        flex: 1;
+        height: 12px;
+        background: #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 0 1rem;
+    }
+    
+    .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 6px;
+        width: 0%;
+        transition: width 1s ease-out;
+    }
+    
+    .bar-count {
+        width: 40px;
+        text-align: right;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+    
+    @media (max-width: 768px) {
+        .bar-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .bar-label {
+            margin-bottom: 0.5rem;
+        }
+        .bar-wrapper {
+            margin: 0;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .bar-count {
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="metrics-header">
+    <h1 style="color: white; font-size: 2.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">System Dashboard</h1>
+    <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-top: 0.5rem;">Real-time insights and performance metrics</p>
+</div>
+
+<div class="stat-cards">
+    <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-value">{{ total_predictions|default:"0" }}</div>
+        <div class="stat-label">Total Diagnoses</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-value">{{ average_confidence|default:"0%" }}</div>
+        <div class="stat-label">Avg. Confidence</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🦠</div>
+        <div class="stat-value" style="font-size: 1.5rem; margin: 0.5rem 0; text-transform: capitalize;">{{ most_common_disease|title|default:"N/A" }}</div>
+        <div class="stat-label">Most Frequent</div>
+    </div>
+</div>
+
+<div class="chart-container">
+    <h2 class="chart-title">Disease Distribution</h2>
+    
+    {% if disease_counts %}
+        <div id="chart-data" style="display: none;">
+            {% for disease, count in disease_counts.items %}
+                <span class="data-point" data-disease="{{ disease }}" data-count="{{ count }}"></span>
+            {% endfor %}
+        </div>
+        <div id="chart-render-area"></div>
+    {% else %}
+        <p style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No diagnosis data available yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dataPoints = document.querySelectorAll('.data-point');
+        if (dataPoints.length === 0) return;
+        
+        let maxCount = 0;
+        const data = [];
+        
+        dataPoints.forEach(point => {
+            const count = parseInt(point.dataset.count);
+            if (count > maxCount) maxCount = count;
+            data.push({
+                disease: point.dataset.disease.replace(/_/g, ' '),
+                count: count
+            });
+        });
+        
+        // Sort descending
+        data.sort((a, b) => b.count - a.count);
+        
+        const renderArea = document.getElementById('chart-render-area');
+        
+        data.forEach((item, index) => {
+            const percentage = (item.count / maxCount) * 100;
+            
+            const row = document.createElement('div');
+            row.className = 'bar-row';
+            
+            row.innerHTML = `
+                <div class="bar-label">${item.disease}</div>
+                <div class="bar-wrapper">
+                    <div class="bar-fill" id="bar-${index}" style="width: 0%"></div>
+                </div>
+                <div class="bar-count">${item.count}</div>
+            `;
+            
+            renderArea.appendChild(row);
+            
+            // Animate bar
+            setTimeout(() => {
+                document.getElementById(`bar-${index}`).style.width = `${percentage}%`;
+            }, 100 + (index * 100));
+        });
+    });
+</script>
+{% endblock %}

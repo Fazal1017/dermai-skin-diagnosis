@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff Dashboard - {{ hospital.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+    .section-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .appointment-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    .appointment-table th, .appointment-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    .appointment-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+    .status-badge {
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+    .status-PENDING { background: #ffc107; color: #000; }
+    .status-CONFIRMED { background: #28a745; color: white; }
+    .status-COMPLETED { background: #17a2b8; color: white; }
+    .status-CANCELLED { background: #dc3545; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>{{ staff_profile.name }} ({{ staff_profile.role }})</h1>
+    <h2>{{ hospital.name }}</h2>
+    
+    <!-- Today -->
+    <div class="section-card">
+        <h3>📅 Today ({{ today|date:"M d, Y" }})</h3>
+        {% include 'accounts/_appointment_table.html' with appointments=today_appointments %}
+    </div>
+    
+    <!-- Tomorrow -->
+    <div class="section-card">
+        <h3>📅 Tomorrow ({{ tomorrow|date:"M d, Y" }})</h3>
+        {% include 'accounts/_appointment_table.html' with appointments=tomorrow_appointments %}
+    </div>
+    
+    <!-- Day after -->
+    <div class="section-card">
+        <h3>📅 Day After ({{ day_after|date:"M d, Y" }})</h3>
+        {% include 'accounts/_appointment_table.html' with appointments=day_after_appointments %}
+    </div>
+    
+    <!-- Future -->
+    <div class="section-card">
+        <h3>🔮 Future Appointments</h3>
+        {% include 'accounts/_appointment_table.html' with appointments=future_appointments %}
+    </div>
+</div>
+{% endblock %}

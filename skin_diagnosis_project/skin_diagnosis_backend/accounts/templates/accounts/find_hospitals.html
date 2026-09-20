@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Find Nearby Hospitals{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 2rem;">
+    <h2 style="text-align: center; margin-bottom: 2rem; color: #fff;">🏥 Find Nearby Hospitals</h2>
+    
+    <form method="get" style="display: flex; gap: 10px; margin-bottom: 30px; justify-content: center;">
+        <input type="text" name="city" placeholder="Enter city name..." value="{{ city }}" class="form-control" style="max-width: 400px; background: rgba(255, 255, 255, 0.9);">
+        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">Search</button>
+    </form>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+        {% for h in hospitals %}
+            <div class="glass-card" style="padding: 1.5rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">
+                <h3 style="margin-top: 0; color: #00f2fe;">{{ h.name }}</h3>
+                <p style="color: #eee;"><strong>📍 Address:</strong> {{ h.address }}</p>
+                <p style="color: #eee;"><strong>🏙️ City:</strong> {{ h.city }}</p>
+                <p style="color: #eee;"><strong>📞 Contact:</strong> {{ h.phone_number }}</p>
+                {% if h.email %}
+                <p style="color: #eee;"><strong>✉️ Email:</strong> {{ h.email }}</p>
+                {% endif %}
+                <div style="margin-top: 15px;">
+                    <span style="background: rgba(40, 167, 69, 0.2); color: #28a745; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+                        Verified Hospital
+                    </span>
+                </div>
+            </div>
+        {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #fff;">
+                {% if city %}
+                    <h3>No hospitals found in "{{ city }}".</h3>
+                {% else %}
+                    <h3>No approved hospitals currently listed.</h3>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

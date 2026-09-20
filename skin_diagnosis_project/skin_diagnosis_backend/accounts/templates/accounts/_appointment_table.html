@@ -1,0 +1,18 @@
+<table class="appointment-table">
+    <thead>
+        <tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Disease</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        {% for apt in appointments %}
+        <tr>
+            <td>{{ apt.appointment_time|time:"g:i A" }}</td>
+            <td>Patient {{ apt.customer.patient_id }}</td>
+            <td>Dr. {{ apt.doctor.name }}</td>
+            <td>{% if apt.diagnosis %}{{ apt.diagnosis.disease_name|title }}{% else %}—{% endif %}</td>
+            <td><span class="status-badge status-{{ apt.status }}">{{ apt.get_status_display }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No appointments</td></tr>
+        {% endfor %}
+    </tbody>
+</table>

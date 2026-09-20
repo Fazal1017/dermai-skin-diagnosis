@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}View Prescription{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+    <h2>Prescription</h2>
+    <hr>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <div>
+            <strong>Doctor:</strong> Dr. {{ prescription.doctor.name }}<br>
+            <strong>Hospital:</strong> {{ prescription.doctor.hospital.name }}
+        </div>
+        <div style="text-align: right;">
+            <strong>Patient:</strong> {{ prescription.patient.user.get_full_name|default:prescription.patient.user.username }}<br>
+            <strong>Date:</strong> {{ prescription.created_at|date:"M d, Y" }}
+        </div>
+    </div>
+    
+    <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+        <h3>Medicines</h3>
+        <p style="white-space: pre-wrap;">{{ prescription.medicines }}</p>
+    </div>
+    
+    <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+        <h3>Dosage</h3>
+        <p style="white-space: pre-wrap;">{{ prescription.dosage }}</p>
+    </div>
+    
+    {% if prescription.notes %}
+    <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+        <h3>Notes</h3>
+        <p style="white-space: pre-wrap;">{{ prescription.notes }}</p>
+    </div>
+    {% endif %}
+    
+    {% if prescription.pdf_file %}
+    <div style="margin-top: 30px;">
+        <a href="{{ prescription.pdf_file.url }}" target="_blank" class="btn btn-primary">Download PDF Prescription</a>
+    </div>
+    {% endif %}
+    
+    <div style="margin-top: 20px;">
+        <a href="javascript:history.back()" class="btn btn-outline">Back</a>
+    </div>
+</div>
+{% endblock %}

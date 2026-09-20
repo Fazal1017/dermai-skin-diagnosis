@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title %}Diagnosis History - Skin AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .history-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .history-title {
+        color: white;
+        font-size: 2rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        margin: 0;
+    }
+    
+    .export-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-export {
+        padding: 0.7rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        background: white;
+        color: #667eea;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+    
+    .btn-export:hover {
+        background: #f0f2ff;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+    
+    .filters-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .filter-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+        font-size: 0.9rem;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 0.7rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-family: inherit;
+    }
+    
+    .filter-group select:focus,
+    .filter-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .btn-filter {
+        padding: 0.7rem 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-reset {
+        padding: 0.7rem 2rem;
+        background: #f0f0f0;
+        color: #333;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .btn-reset:hover {
+        background: #e0e0e0;
+    }
+    
+    .diagnoses-table {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    
+    .table-wrapper {
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    th {
+        padding: 1.2rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    tbody tr {
+        transition: background 0.2s;
+    }
+    
+    tbody tr:hover {
+        background: #f8f9ff;
+    }
+    
+    .condition-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #f0f2ff;
+        color: #667eea;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: capitalize;
+    }
+    
+    .confidence-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        min-width: 70px;
+        text-align: center;
+    }
+    
+    .confidence-high {
+        background: #c8e6c9;
+        color: #2e7d32;
+    }
+    
+    .confidence-medium {
+        background: #fff9c4;
+        color: #f57f17;
+    }
+    
+    .confidence-low {
+        background: #ffcdd2;
+        color: #c62828;
+    }
+    
+    .date-cell {
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .notes-cell {
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .stats-row {
+        background: #f8f9ff;
+        padding: 1rem;
+        text-align: right;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #999;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .history-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .export-buttons {
+            width: 100%;
+        }
+        
+        .filters-container {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            min-width: unset;
+        }
+        
+        th, td {
+            padding: 0.7rem 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-header">
+    <h1 class="history-title">📋 Diagnosis History</h1>
+    <div class="export-buttons">
+        <a href="/export/?format=csv" class="btn-export">📥 Export CSV</a>
+        <a href="/export/?format=json" class="btn-export">📥 Export JSON</a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-container">
+    <form method="get" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+        <div class="filter-group">
+            <label for="disease">Disease Type</label>
+            <select name="disease" id="disease">
+                <option value="">All Diseases</option>
+                {% for disease in all_diseases %}
+                    <option value="{{ disease }}" {% if disease == selected_disease %}selected{% endif %}>
+                        {{ disease|title }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="min_conf">Min. Confidence (%)</label>
+            <input type="number" name="min_conf" id="min_conf" min="0" max="100" value="{{ selected_confidence }}" placeholder="0">
+        </div>
+        
+        <button type="submit" class="btn-filter">🔍 Filter</button>
+        <a href="/history/" class="btn-reset">↻ Reset</a>
+    </form>
+</div>
+
+<!-- Results Table -->
+<div class="diagnoses-table">
+    {% if diagnoses %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Condition</th>
+                        <th>Confidence</th>
+                        <th>Patient ID</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for diagnosis in diagnoses %}
+                        <tr>
+                            <td>#{{ diagnosis.id }}</td>
+                            <td class="date-cell">{{ diagnosis.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <span class="condition-badge">{{ diagnosis.predicted_condition|title }}</span>
+                            </td>
+                            <td>
+                                {% with confidence_percent=diagnosis.confidence_score|mul:100 %}
+                                    <span class="confidence-badge {% if confidence_percent >= 80 %}confidence-high{% elif confidence_percent >= 60 %}confidence-medium{% else %}confidence-low{% endif %}">
+                                        {{ confidence_percent|floatformat:1 }}%
+                                    </span>
+                                {% endwith %}
+                            </td>
+                            <td>{{ diagnosis.patient_id|default:"—" }}</td>
+                            <td class="notes-cell">{{ diagnosis.notes|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="stats-row">
+            Showing {{ diagnoses|length }} of {{ total_count }} total diagnoses
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <h3>No diagnoses found</h3>
+            <p>{% if selected_disease or selected_confidence %}Try adjusting your filters{% else %}Start by uploading an image{% endif %}</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Custom template filter for multiplication -->
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Add multiplication filter for template
+    // This is handled by Django filters
+</script>
+{% endblock %}
